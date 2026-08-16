@@ -1,0 +1,13 @@
+{
+  "cmapss": {
+    "canonical_page": "https://data.nasa.gov/dataset/cmapss-jet-engine-simulated-data",
+    "download": "https://data.nasa.gov/docs/legacy/CMAPSSData.zip",
+    "source_type": "NASA high-fidelity simulator-generated run-to-failure benchmark",
+    "sample_in_repo": "cmapss_fd001_excerpt.csv"
+  },
+  "ims_bearings": {
+    "canonical_page": "https://data.nasa.gov/dataset/ims-bearings",
+    "download": "https://data.nasa.gov/docs/legacy/IMS.zip",
+    "source_type": "physical run-to-failure bearing vibration experiments"
+  }
+}

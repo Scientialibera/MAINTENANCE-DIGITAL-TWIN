@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f4f7f9">
+  <title>Maintenance Digital Twin</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">MT</div>
+        <div>
+          <strong>Maintenance Twin</strong>
+          <span>Plant reliability console</span>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Primary">
+        <button class="nav-item is-active" data-view="overview">
+          <span class="nav-icon">01</span><span>Plant Overview</span>
+        </button>
+        <button class="nav-item" data-view="asset">
+          <span class="nav-icon">02</span><span>Asset Twin</span>
+        </button>
+        <button class="nav-item" data-view="risk">
+          <span class="nav-icon">03</span><span>Failure Risk</span>
+        </button>
+        <button class="nav-item" data-view="planner">
+          <span class="nav-icon">04</span><span>Maintenance Planner</span>
+        </button>
+        <button class="nav-item" data-view="validation">
+          <span class="nav-icon">05</span><span>Model Validation</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="source-pill" id="sourcePill">Loading source</div>
+        <p>NASA benchmark data and transparent scenario assumptions.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow" id="pageEyebrow">PLANT RELIABILITY</div>
+          <h1 id="pageTitle">Plant Overview</h1>
+        </div>
+        <div class="top-actions">
+          <select id="assetSelector" aria-label="Selected asset"></select>
+          <div class="api-status"><span></span><b>API connected</b></div>
+        </div>
+      </header>
+
+      <section class="view is-active" id="view-overview">
+        <div class="kpi-grid" id="overviewKpis"></div>
+        <div class="overview-grid">
+          <section class="card plant-card">
+            <div class="card-heading">
+              <div><div class="eyebrow">DIGITAL PLANT</div><h2>Asset topology</h2></div>
+              <div class="legend">
+                <span><i class="status-dot normal"></i>Normal</span>
+                <span><i class="status-dot watch"></i>Watch</span>
+                <span><i class="status-dot high"></i>High</span>
+                <span><i class="status-dot critical"></i>Critical</span>
+              </div>
+            </div>
+            <div id="plantTopology" class="plant-topology"></div>
+          </section>
+
+          <section class="card health-card">
+            <div class="card-heading">
+              <div><div class="eyebrow">PRIORITY QUEUE</div><h2>Asset health</h2></div>
+              <span class="small-label">RUL cycles</span>
+            </div>
+            <div id="healthRanking" class="health-ranking"></div>
+          </section>
+
+          <section class="card sensor-card">
+            <div class="card-heading">
+              <div><div class="eyebrow">SENSOR HISTORY</div><h2>Selected asset telemetry</h2></div>
+              <span class="small-label" id="telemetryAssetLabel">Asset</span>
+            </div>
+            <div class="chart-frame" id="sensorTrend"></div>
+            <div class="sensor-legend">
+              <span><i class="line-key blue"></i>S2</span>
+              <span><i class="line-key teal"></i>S4</span>
+              <span><i class="line-key amber"></i>S15</span>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-asset">
+        <div class="asset-layout">
+          <section class="card engine-card">
+            <div class="card-heading">
+              <div><div class="eyebrow">ASSET DIGITAL TWIN</div><h2 id="assetTwinName">Asset</h2></div>
+              <div class="risk-badge" id="assetRiskBadge">NORMAL</div>
+            </div>
+            <div class="engine-stage" id="engineStage">
+              <svg class="engine-svg" viewBox="0 0 900 410" role="img" aria-label="Simplified rotating equipment digital twin">
+                <rect x="85" y="132" width="650" height="150" rx="72" fill="#eef3f5" stroke="#9bb0ba" stroke-width="2"/>
+                <path d="M90 205 L33 160 L33 250 Z" fill="#d8e1e5" stroke="#8ea5b0" stroke-width="2"/>
+                <rect x="742" y="164" width="100" height="82" rx="22" fill="#e9eef1" stroke="#8ea5b0" stroke-width="2"/>
+                <line x1="129" y1="205" x2="815" y2="205" stroke="#58717d" stroke-width="7"/>
+                <g id="fanBlades" stroke="#6f8791" stroke-width="7">
+                  <line x1="184" y1="156" x2="184" y2="254"/>
+                  <line x1="153" y1="171" x2="215" y2="239"/>
+                  <line x1="153" y1="239" x2="215" y2="171"/>
+                </g>
+                <g fill="#c9d7dc" stroke="#758e99" stroke-width="2">
+                  <rect x="259" y="150" width="39" height="110" rx="7"/>
+                  <rect x="315" y="146" width="39" height="118" rx="7"/>
+                  <rect x="371" y="142" width="39" height="126" rx="7"/>
+                  <rect x="487" y="147" width="38" height="116" rx="7"/>
+                  <rect x="540" y="151" width="38" height="108" rx="7"/>
+                  <rect x="593" y="156" width="38" height="98" rx="7"/>
+                </g>
+                <path d="M425 154 Q453 119 478 154 L478 256 Q452 289 425 256 Z" fill="#f6e2ba" stroke="#be8b34" stroke-width="2"/>
+                <g class="sensor-callout">
+                  <circle cx="285" cy="137" r="8"/><line x1="285" y1="129" x2="230" y2="78"/><text x="106" y="71">S2 inlet response</text>
+                  <circle cx="392" cy="129" r="8"/><line x1="392" y1="121" x2="385" y2="59"/><text x="323" y="46">S4 compressor response</text>
+                  <circle cx="508" cy="136" r="8"/><line x1="508" y1="128" x2="566" y2="72"/><text x="575" y="66">S15 degradation channel</text>
+                  <circle cx="611" cy="266" r="8"/><line x1="611" y1="274" x2="667" y2="326"/><text x="676" y="340">Vibration scenario index</text>
+                </g>
+                <text x="118" y="340" class="diagram-label">FAN</text>
+                <text x="286" y="340" class="diagram-label">COMPRESSOR</text>
+                <text x="423" y="340" class="diagram-label">COMBUSTOR</text>
+                <text x="554" y="340" class="diagram-label">TURBINE</text>
+              </svg>
+            </div>
+            <div id="assetTelemetryCards" class="telemetry-cards"></div>
+          </section>
+
+          <aside class="card twin-control-card">
+            <div class="card-heading">
+              <div><div class="eyebrow">WHAT-IF ENGINE</div><h2>Operating scenario</h2></div>
+            </div>
+            <label class="slider-row">
+              <span>Load multiplier <b id="loadValue">1.00x</b></span>
+              <input type="range" id="loadSlider" min="0.6" max="1.6" step="0.05" value="1">
+            </label>
+            <label class="slider-row">
+              <span>Ambient temperature delta <b id="tempValue">0 C</b></span>
+              <input type="range" id="tempSlider" min="-10" max="25" step="1" value="0">
+            </label>
+            <label class="slider-row">
+              <span>Vibration multiplier <b id="vibrationValue">1.00x</b></span>
+              <input type="range" id="vibrationSlider" min="0.8" max="2.5" step="0.05" value="1">
+            </label>
+            <label class="slider-row">
+              <span>Bearing degradation <b id="bearingValue">0%</b></span>
+              <input type="range" id="bearingSlider" min="0" max="1" step="0.05" value="0">
+            </label>
+            <div class="scenario-buttons">
+              <button class="secondary-btn" id="loadPreset">High load</button>
+              <button class="secondary-btn" id="bearingPreset">Bearing fault</button>
+              <button class="secondary-btn" id="resetScenario">Reset</button>
+            </div>
+            <button class="primary-btn" id="runScenario">Run scenario</button>
+            <p class="boundary-copy">Scenario modifiers accelerate or perturb the current prognosis. They are explicitly separated from measured benchmark telemetry.</p>
+          </aside>
+
+          <section class="card rul-card">
+            <div class="card-heading">
+              <div><div class="eyebrow">REMAINING USEFUL LIFE</div><h2>Prediction interval</h2></div>
+              <span class="model-chip" id="estimateSource">source</span>
+            </div>
+            <div class="rul-hero">
+              <div class="rul-main"><strong id="rulP50">--</strong><span>cycles P50</span></div>
+              <div class="rul-range">
+                <div><span>P10</span><strong id="rulP10">--</strong></div>
+                <div><span>P90</span><strong id="rulP90">--</strong></div>
+              </div>
+            </div>
+            <div class="rul-scale">
+              <div class="rul-track"><div class="rul-window" id="rulWindow"></div><div class="rul-marker" id="rulMarker"></div></div>
+              <div class="rul-scale-labels"><span>0</span><span>40</span><span>80</span><span>125+</span></div>
+            </div>
+            <div class="scenario-comparison" id="scenarioComparison"></div>
+          </section>
+
+          <section class="card degradation-card">
+            <div class="card-heading">
+              <div><div class="eyebrow">DEGRADATION TRAJECTORY</div><h2>Health history and maintenance window</h2></div>
+            </div>
+            <div class="chart-frame large" id="degradationChart"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-risk">
+        <section class="card risk-table-card">
+          <div class="card-heading">
+            <div><div class="eyebrow">FLEET PROGNOSTICS</div><h2>Failure risk prioritization</h2></div>
+            <div class="filter-row">
+              <button class="filter-chip is-active" data-risk-filter="all">All assets</button>
+              <button class="filter-chip" data-risk-filter="attention">Attention</button>
+            </div>
+          </div>
+          <div class="risk-summary" id="riskSummary"></div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Asset</th><th>Cell</th><th>Health</th><th>RUL P50</th><th>P10-P90</th><th>Failure risk</th><th>State</th></tr>
+              </thead>
+              <tbody id="riskTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="view-planner">
+        <div class="planner-layout">
+          <aside class="card planner-controls">
+            <div class="card-heading">
+              <div><div class="eyebrow">OPTIMIZATION INPUTS</div><h2>Maintenance constraints</h2></div>
+            </div>
+            <label class="control-field">Maintenance crews
+              <select id="crewCount">
+                <option>1</option><option selected>2</option><option>3</option><option>4</option>
+              </select>
+            </label>
+            <label class="control-field">Planning horizon
+              <select id="horizonSlots">
+                <option value="10">5 days</option>
+                <option value="14" selected>7 days</option>
+                <option value="20">10 days</option>
+                <option value="28">14 days</option>
+              </select>
+            </label>
+            <label class="slider-row">
+              <span>Risk tolerance <b id="riskToleranceValue">1.00x</b></span>
+              <input type="range" id="riskTolerance" min="0.5" max="2.5" step="0.1" value="1">
+            </label>
+            <button class="primary-btn" id="runOptimizer">Optimize schedule</button>
+            <p class="boundary-copy">The solver uses expected failure consequence, planned maintenance cost, crew capacity and production loss. Cost values are explicit demo assumptions.</p>
+          </aside>
+
+          <section class="card planner-main">
+            <div class="card-heading">
+              <div><div class="eyebrow">WEEKLY PLAN</div><h2>Optimized maintenance schedule</h2></div>
+              <span class="solver-chip">MILP</span>
+            </div>
+            <div class="planner-kpis" id="plannerKpis"></div>
+            <div class="gantt-wrap" id="maintenanceGantt"></div>
+          </section>
+
+          <section class="card value-card">
+            <div class="card-heading">
+              <div><div class="eyebrow">DECISION VALUE</div><h2>Before and after</h2></div>
+            </div>
+            <div id="valueComparison" class="value-comparison"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-validation">
+        <div class="validation-grid">
+          <section class="card validation-hero">
+            <div>
+              <div class="eyebrow">PROGNOSTICS MODEL</div>
+              <h2>Model validation and data lineage</h2>
+              <p>The application does not publish fabricated accuracy. Metrics appear only after the included training pipeline has run against the downloaded NASA C-MAPSS archive.</p>
+            </div>
+            <div class="model-state" id="modelState"></div>
+          </section>
+          <section class="card">
+            <div class="card-heading"><div><div class="eyebrow">BENCHMARK PROTOCOL</div><h2>Evaluation design</h2></div></div>
+            <div id="benchmarkProtocol" class="protocol-grid"></div>
+          </section>
+          <section class="card">
+            <div class="card-heading"><div><div class="eyebrow">METRICS</div><h2>Measured validation</h2></div></div>
+            <div id="validationMetrics" class="metric-empty"></div>
+          </section>
+          <section class="card research-card">
+            <div class="card-heading"><div><div class="eyebrow">RESEARCH BASIS</div><h2>Methods used in this POC</h2></div></div>
+            <div class="research-list">
+              <div><strong>Run-to-failure benchmark</strong><span>NASA C-MAPSS multivariate engine trajectories</span></div>
+              <div><strong>Physical vibration reference</strong><span>NASA IMS bearing run-to-failure experiments</span></div>
+              <div><strong>Uncertainty</strong><span>Empirical P10/P50/P90 tree-prediction intervals</span></div>
+              <div><strong>Scheduling</strong><span>Mixed-integer linear maintenance optimization</span></div>
+              <div><strong>Twin boundary</strong><span>Measured telemetry and prognostics are kept separate from scenario perturbations</span></div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
