@@ -1,13 +1,13 @@
 # Maintenance Digital Twin
 
-Manufacturing predictive-maintenance POC combining asset telemetry, remaining-useful-life prediction, operating what-if analysis and maintenance scheduling.
+Manufacturing predictive-maintenance application combining asset telemetry, remaining-useful-life prediction, operating what-if analysis and maintenance scheduling.
 
-The application is intentionally built around two separate analytical questions:
+The application addresses two analytical questions:
 
 1. What is the current degradation state and remaining useful life of each asset?
 2. Given limited crews and production downtime, which assets should be maintained and when?
 
-The frontend uses a light industrial SaaS design. It includes Plant Overview, Asset Twin, Failure Risk, Maintenance Planner and Model Validation views.
+The frontend uses a light industrial SaaS design with Plant Overview, Asset Twin, Failure Risk, Maintenance Planner and Model Validation views.
 
 ## Data
 
@@ -109,11 +109,7 @@ pip install -e ".[dev]"
 uvicorn api.main:app --reload --port 8000
 ```
 
-Open:
-
-```text
-http://localhost:8000
-```
+Open `http://localhost:8000`.
 
 ## Download the full NASA data
 
@@ -130,11 +126,7 @@ The full datasets are stored under `data/raw/` and are intentionally excluded fr
 python scripts/train_rul_model.py
 ```
 
-The model uses C-MAPSS FD001, caps the training RUL target at 125 cycles and keeps complete engine trajectories together during validation. The saved artifact is written to:
-
-```text
-models/cmapss_fd001_rul.joblib
-```
+The model uses C-MAPSS FD001, caps the training RUL target at 125 cycles and keeps complete engine trajectories together during validation. The saved artifact is written to `models/cmapss_fd001_rul.joblib`.
 
 Restart the API after training. The Model Validation screen will then report measured holdout metrics.
 
@@ -148,19 +140,6 @@ python scripts/extract_ims_features.py data/raw/IMS/<experiment-directory>
 
 The extractor computes vibration RMS, kurtosis, crest factor and spectral energy.
 
-## Tests
-
-```bash
-pytest -q
-python scripts/check_no_emoji.py
-```
-
-## Repository policy
-
-There is no GitHub Actions workflow and no CI/CD automation in this repository. Docker is provided only as a runtime packaging option.
-
-The project contains no emoji characters. `scripts/check_no_emoji.py` provides a local enforcement check.
-
 ## Research basis
 
-The implementation is guided by NASA prognostics research and maintenance-scheduling literature rather than a generic predictive-maintenance dashboard. See `docs/research-basis.md` for the papers and the exact boundary between implemented methods and simplified POC assumptions.
+The implementation is guided by NASA prognostics research and maintenance-scheduling literature. See `docs/research-basis.md` for the papers and the exact boundary between implemented methods and simplified prototype assumptions.
