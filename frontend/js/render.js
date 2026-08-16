@@ -3,6 +3,64 @@ import {sensorChart, degradationChart} from './charts.js';
 const money = value => `$${Math.round(Number(value || 0)).toLocaleString()}`;
 const pct = value => `${Math.round(Number(value || 0) * 100)}%`;
 const safe = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const equipmentCatalog = [
+  {tag:'PMP-101',type:'Centrifugal pump'},
+  {tag:'CMP-102',type:'Air compressor'},
+  {tag:'HEX-103',type:'Heat exchanger'},
+  {tag:'VLV-104',type:'Control valve'},
+  {tag:'HOP-201',type:'Feed hopper'},
+  {tag:'CRH-202',type:'Rotary crusher'},
+  {tag:'CNV-203',type:'Belt conveyor'},
+  {tag:'PRS-204',type:'Hydraulic press'},
+  {tag:'MTR-301',type:'Auxiliary motor'},
+  {tag:'FAN-302',type:'Exhaust fan'}
+];
+const assetIndex = assetOrId => Math.max(0,Number(String(typeof assetOrId==='string' ? assetOrId : assetOrId?.asset_id || '').match(/\d+/)?.[0] || 1)-1);
+export function assetDisplay(assetOrId) {
+  const id=typeof assetOrId==='string' ? assetOrId : assetOrId?.asset_id;
+  const unit=assetIndex(id);
+  return equipmentCatalog[unit] || {tag:id || 'ASSET',type:'Rotating equipment'};
+}
+
+const equipmentIcon=index=>[
+  `<g class="equipment-icon pump"><circle cx="0" cy="0" r="28"/><path d="M-28 0 H-43 M28 0 H43 M-9-13 L15 0 L-9 13 Z"/></g>`,
+  `<g class="equipment-icon compressor"><path d="M-38-24 L31-16 V16 L-38 24 Z"/><path d="M-21-19 V19 M-5-17 V17 M12-15 V15"/><line x1="31" y1="0" x2="43" y2="0"/></g>`,
+  `<g class="equipment-icon exchanger"><circle cx="0" cy="0" r="31"/><path d="M-20-22 L20 22 M20-22 L-20 22"/><line x1="-43" y1="0" x2="-31" y2="0"/><line x1="31" y1="0" x2="43" y2="0"/></g>`,
+  `<g class="equipment-icon valve"><path d="M-35-22 L0 0 L-35 22 Z M35-22 L0 0 L35 22 Z"/><line x1="0" y1="0" x2="0" y2="-31"/><rect x="-13" y="-41" width="26" height="10" rx="3"/></g>`,
+  `<g class="equipment-icon hopper"><path d="M-35-30 H35 L20 8 H-20 Z"/><rect x="-10" y="8" width="20" height="24"/><line x1="-24" y1="8" x2="-32" y2="33"/><line x1="24" y1="8" x2="32" y2="33"/></g>`,
+  `<g class="equipment-icon crusher"><rect x="-38" y="-30" width="76" height="60" rx="8"/><circle cx="-14" cy="0" r="16"/><circle cx="17" cy="0" r="13"/><circle cx="-14" cy="0" r="4"/><circle cx="17" cy="0" r="3"/></g>`,
+  `<g class="equipment-icon conveyor"><path d="M-42-15 H42 V15 H-42 Z"/><circle cx="-27" cy="0" r="9"/><circle cx="0" cy="0" r="9"/><circle cx="27" cy="0" r="9"/><path d="M-31 15 L-38 31 M31 15 L38 31"/></g>`,
+  `<g class="equipment-icon press"><path d="M-36-32 H36 V-21 H13 V5 H-13 V-21 H-36 Z M-32 23 H32 V33 H-32 Z"/><rect x="-9" y="5" width="18" height="18"/></g>`,
+  `<g class="equipment-icon motor"><rect x="-35" y="-25" width="63" height="50" rx="18"/><path d="M28-9 H40 V9 H28 M-21 25 V34 M14 25 V34"/><text x="-4" y="7">M</text></g>`,
+  `<g class="equipment-icon fan"><circle cx="0" cy="0" r="32"/><circle cx="0" cy="0" r="5"/><path d="M0-5 Q-3-30 17-25 Q25-18 5 0 M5 0 Q30-3 25 17 Q18 25 0 5 M0 5 Q3 30-17 25 Q-25 18-5 0 M-5 0 Q-30 3-25-17 Q-18-25 0-5"/></g>`
+][index] || `<g class="equipment-icon"><circle cx="0" cy="0" r="31"/><path d="M-20 0 H20 M0-20 V20"/></g>`;
+
+export function equipmentTwin(asset,projection=null) {
+  const index=assetIndex(asset);
+  const display=assetDisplay(asset);
+  const riskBand=projection?.risk_band || asset.risk_band;
+  const telemetry=projection?.telemetry || asset.telemetry || {};
+  const labels=[
+    {key:'S2',label:'Input response',value:Number(telemetry.sensor_2).toFixed(3),unit:'benchmark units',tx:300,ty:65,anchor:'end',lx:312,ly:72,x:350,y:125},
+    {key:'S4',label:'Thermal load',value:Number(telemetry.sensor_4).toFixed(3),unit:'benchmark units',tx:450,ty:36,anchor:'middle',lx:450,ly:52,x:450,y:105},
+    {key:'S15',label:'Degradation',value:Number(telemetry.sensor_15).toFixed(3),unit:'benchmark units',tx:600,ty:65,anchor:'start',lx:588,ly:72,x:550,y:125},
+    {key:'VIB',label:'Vibration index',value:telemetry.vibration_index == null ? '1.00' : Number(telemetry.vibration_index).toFixed(2),unit:'scenario index',tx:610,ty:264,anchor:'start',lx:598,ly:253,x:548,y:225}
+  ];
+  const callouts=labels.map(item=>`<g class="sensor-callout" data-sensor-key="${item.key}" data-sensor-label="${item.label}" data-sensor-value="${item.value}" data-sensor-unit="${item.unit}" data-asset-id="${asset.asset_id}"><line x1="${item.x}" y1="${item.y}" x2="${item.lx}" y2="${item.ly}"/><circle class="sensor-hit" cx="${item.x}" cy="${item.y}" r="15"/><circle class="sensor-point" cx="${item.x}" cy="${item.y}" r="7"/><text x="${item.tx}" y="${item.ty}" text-anchor="${item.anchor}">${item.key} · ${item.label}</text></g>`).join('');
+  return `<svg class="engine-svg equipment-twin-svg" viewBox="0 0 900 410" role="img" aria-label="${display.tag} ${display.type} digital twin">
+    <defs><filter id="assetShadow"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#23495c" flood-opacity=".12"/></filter></defs>
+    <path class="twin-flow" d="M180 175 H720"/>
+    <g class="twin-asset" data-asset-id="${asset.asset_id}" transform="translate(450 175) scale(1.9)" filter="url(#assetShadow)">
+      <circle class="twin-status-ring ${riskBand}" cx="0" cy="0" r="57"/>
+      ${equipmentIcon(index)}
+      <circle class="twin-hit" cx="0" cy="0" r="50"/>
+    </g>
+    ${callouts}
+    <text class="twin-tag" x="450" y="329">${display.tag}</text>
+    <text class="twin-type" x="450" y="360">${display.type}</text>
+    <text class="twin-source" x="450" y="389">LIVE BENCHMARK PROXY · ${safe(asset.cell)}</text>
+  </svg>`;
+}
 
 export function overviewKpis(kpis) {
   const items=[
@@ -16,35 +74,34 @@ export function overviewKpis(kpis) {
 }
 
 export function plantTopology(assets) {
-  const width=900,height=420;
-  const positions=[[130,115],[330,115],[530,115],[730,115],[130,295],[330,295],[530,295],[730,295]];
+  const width=900,height=530;
+  const positions=[[130,135],[330,135],[530,135],[730,135],[130,380],[330,380],[530,380],[730,380]];
   const visible=assets.slice(0,8);
-  const connectors=`<path class="flow-line" d="M205 115 H255 M405 115 H455 M605 115 H655 M205 295 H255 M405 295 H455 M605 295 H655 M730 155 V255 M130 155 V255"/>`;
+  const connectors=`<path class="flow-line" d="M190 135 H270 M390 135 H470 M590 135 H670 M190 380 H270 M390 380 H470 M590 380 H670"/>`;
   const machines=visible.map((asset,index)=>{
     const [x,y]=positions[index];
+    const display=assetDisplay(asset);
     return `<g class="machine-group" data-asset-id="${asset.asset_id}" transform="translate(${x},${y})">
       <circle class="machine-ring ${asset.risk_band}" cx="0" cy="0" r="57"/>
-      <rect class="machine-shell" x="-47" y="-34" width="94" height="68" rx="13"/>
-      <rect class="machine-head" x="-25" y="-49" width="50" height="17" rx="5"/>
-      <circle cx="-20" cy="0" r="13" fill="#e8eef1" stroke="#8ea5b0"/>
-      <line x1="-20" y1="-11" x2="-20" y2="11" stroke="#78909a" stroke-width="3"/>
-      <rect x="3" y="-13" width="30" height="26" rx="5" fill="#eef3f5" stroke="#9bb0ba"/>
-      <text class="machine-label" x="0" y="78">${asset.asset_id}</text>
-      <text class="machine-meta" x="0" y="91">${Math.round(asset.rul.p50)} cycles</text>
+      ${equipmentIcon(index)}
+      <circle class="machine-hit" cx="0" cy="0" r="50"/>
+      <text class="machine-label" x="0" y="80">${display.tag}</text>
+      <text class="machine-type" x="0" y="95">${display.type}</text>
+      <text class="machine-meta" x="0" y="110">${Math.round(asset.rul.p50)} cycles RUL</text>
     </g>`;
   }).join('');
-  return `<svg class="plant-svg" viewBox="0 0 ${width} ${height}">
-    <rect class="plant-floor" x="35" y="35" width="830" height="350" rx="18"/>
+  return `<svg class="plant-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
+    <rect class="plant-floor" x="35" y="15" width="830" height="500" rx="18"/>
     ${connectors}${machines}
-    <text x="55" y="60" fill="#80939b" font-size="9" font-weight="700" letter-spacing=".12em">PROCESS LINE A</text>
-    <text x="55" y="240" fill="#80939b" font-size="9" font-weight="700" letter-spacing=".12em">PROCESS LINE B</text>
+    <g class="line-heading line-a"><rect x="55" y="35" width="145" height="28" rx="14"/><circle cx="71" cy="49" r="4"/><text x="83" y="52.5">LINE A · PROCESS GAS</text></g>
+    <g class="line-heading line-b"><rect x="55" y="280" width="164" height="28" rx="14"/><circle cx="71" cy="294" r="4"/><text x="83" y="297.5">LINE B · MATERIAL FLOW</text></g>
   </svg>`;
 }
 
 export function healthRanking(assets) {
   return [...assets].sort((a,b)=>a.rul.p50-b.rul.p50).slice(0,8).map(asset=>`
     <div class="health-row" data-asset-id="${asset.asset_id}">
-      <div class="health-name"><strong>${asset.asset_id}</strong><span>${safe(asset.cell)}</span></div>
+      <div class="health-name"><strong>${assetDisplay(asset).tag}</strong><span>${safe(assetDisplay(asset).type)}</span></div>
       <div class="health-bar"><div class="health-fill ${asset.risk_band}" style="width:${asset.health_score}%"></div></div>
       <div class="health-rul">${Math.round(asset.rul.p50)}</div>
     </div>`).join('');
@@ -92,7 +149,7 @@ export function riskSummary(assets) {
 export function riskRows(assets) {
   return [...assets].sort((a,b)=>b.failure_probability-a.failure_probability).map(asset=>`
   <tr data-asset-id="${asset.asset_id}">
-    <td><strong>${asset.asset_id}</strong><div class="small-label">${safe(asset.asset_name)}</div></td>
+    <td><strong>${assetDisplay(asset).tag}</strong><div class="small-label">${safe(assetDisplay(asset).type)}</div></td>
     <td>${safe(asset.cell)}</td>
     <td><div class="table-health"><span>${asset.health_score}</span><div class="mini-bar"><i style="width:${asset.health_score}%"></i></div></div></td>
     <td>${Math.round(asset.rul.p50)} cycles</td><td>${Math.round(asset.rul.p10)} - ${Math.round(asset.rul.p90)}</td><td>${pct(asset.failure_probability)}</td>
@@ -115,7 +172,7 @@ export function gantt(result, assets) {
       const active=job && slot>=job.start_slot && slot<job.start_slot+job.duration_slots;
       return `<div class="gantt-cell ${active?'active':''} ${active && ['critical','high'].includes(asset.risk_band)?'high':''}" title="${active?'Planned maintenance':'Available'}"></div>`;
     }).join('');
-    return `<div class="gantt-row"><div class="gantt-asset">${asset.asset_id}</div>${cells}</div>`;
+    return `<div class="gantt-row"><div class="gantt-asset">${assetDisplay(asset).tag}</div>${cells}</div>`;
   }).join('');
   return `<div class="gantt">${header}${rows}</div>`;
 }
