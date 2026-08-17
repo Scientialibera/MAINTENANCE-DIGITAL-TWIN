@@ -35,6 +35,11 @@ if assets_dir.exists():
     app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> FileResponse:
+    return FileResponse(settings.frontend_dir / "favicon.png", media_type="image/png")
+
+
 @app.get("/{full_path:path}", include_in_schema=False)
 def spa(full_path: str) -> FileResponse:
     requested = settings.frontend_dir / full_path
